@@ -102,4 +102,4 @@ def saveVectorField(image_number):
         #save in the simple ASCII table format
         tools.save(x, y, u3, v3, sig2noise, mask, folder + '/Vector_field/exp1_' + image_number + '.txt' )
 
-        return uOut,vOut
+        return x,y,uOut,vOut,sig2noise, mask
