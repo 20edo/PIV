@@ -22,7 +22,7 @@ def flash_mask(image, bin_treshold=250, region_connectivity=2, area_treshold=100
     tresh = sk.filters.threshold_otsu(image)
 
     # Morphological closing ( holes inside a flashed region mean nothing)
-    bw = sk.morphology.closing(frame_a > tresh, sk.morphology.square(3))
+    bw = sk.morphology.closing(image > tresh, sk.morphology.square(3))
     
     # Split the image in regions
     labeled_image = sk.measure.label(bw,connectivity=region_connectivity)

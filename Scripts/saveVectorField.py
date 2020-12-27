@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-def saveVectorField(image_number):
+def saveVectorField(image_number, save=0):
+        'Saves the vector field associated to the given image number, Requires flas_mask function'
+        import skimage 
+        import skimage.exposure as exposure
+        import skimage.morphology as morphology
+        from skimage.filters import rank
+        import warnings
+
+        # Print infos about the number the program is writing
         print('Processing image number:'+ image_number)
         # Camera
         resolution = (992,1004) #pixel
@@ -9,58 +17,60 @@ def saveVectorField(image_number):
         pixel_depth = 8 # bit
         dynamic_range = 2**pixel_depth # levels
         scaling_factor = 1/(np.mean(physical_window)/np.mean(resolution)) # m/pixel
-
+        # Read frames data
         frame_a  = tools.imread( folder + '/Images/A' + image_number + 'a.tif' )
         frame_b  = tools.imread( folder + '/Images/A' + image_number + 'b.tif' )
-
-
-
-    # Image equalization
-        def image_equalization(frame,dynamic_range,plot=0):
-            frame = np.array(frame)
-            # Histogram and cdf of the original image
-            hist,bins = np.histogram(frame.flatten(),dynamic_range,[0,dynamic_range])
-            cdf = hist.cumsum()
-            cdf_normalized = cdf * hist.max()/ cdf.max()
+        
+        if True:
+            # Save masked and flashed regions
+            flashMask_a, number_a = flash_mask(frame_a)
+            flashMask_b, number_b = flash_mask(frame_b)
             
-            #Image equalization
-            cdf_m = np.ma.masked_equal(cdf,0)
-            cdf_m = (cdf_m - cdf_m.min())*255/(cdf_m.max()-cdf_m.min())
-            cdf = np.ma.filled(cdf_m,0).astype('uint8')
-            frameEQ = cdf[frame]    
+            # Replace flashed regions with a random noise
+            seed_a = int(image_number) + ord('a')
+            generator = np.random.default_rng(seed_a) # Seed a generator for results to be reproducigles
+            noise = generator.uniform(0,256, np.shape(flashMask_a))
+            noise = noise*flashMask_a
+            noise = noise.astype(int)
+            # noise = skimage.util.img_as_ubyte(noise.astype('uint8'))
+            frame_a = noise*flashMask_a+frame_a*(1-flashMask_a)
+
+            seed_b = int(image_number) + ord('b')
+            generator = np.random.default_rng(seed_a) # Seed a generator for results to be reproducibles
+            noise = generator.uniform(0,256, np.shape(flashMask_b))
+            noise = noise.astype(int)
+            # noise = skimage.util.img_as_ubyte(noise.astype('uint8'))
+            frame_b = noise*flashMask_b+frame_b*(1-flashMask_b)
+
+            # Warn the user if some flashed region has been identified
+            if number_a > 0:
+                warnings.warn(str(number_a)+ ' flashed regions in frame a have been replaced with a random noise')
+
+            if number_b > 0:
+                warnings.warn(str(number_a)+ ' flashed regions in frame a have been replaced with a random noise')
+
+
+           # Convert for rank filter
+           # frame_a = skimage.util.img_as_ubyte(frame_a)
+           # frame_b = skimage.util.img_as_ubyte(frame_a)
+
+        # Equalize images
             
-            # Histogram and cdf of the equalized image
-            frameEQ = np.array(frameEQ)
-            histEQ,binsEQ = np.histogram(frameEQ.flatten(),dynamic_range,[0,dynamic_range])
-            cdfEQ = histEQ.cumsum()
-            cdf_normalizedEQ = cdfEQ * histEQ.max()/ cdfEQ.max()
+        selem = morphology.disk(70)     # Element that defines the pixels to be considered for the equalization
             
-            # Plot
-            if plot:
-                # Oriinal image
-                ax1 = plt.subplot(1,2,1)
-                ax1.plot(cdf_normalized, color = 'b')
-                ax1.hist(frame.flatten(),dynamic_range,[0,dynamic_range], color = 'r')
-                ax1.set_xlim([0,dynamic_range])
-                ax1.legend(('cdf','histogram'), loc = 'upper left')
-                ax1.set_title('Original image')
-                # Equalized image
-                ax2 = plt.subplot(1,2,2)
-                ax2.plot(cdf_normalizedEQ, color = 'b')
-                ax2.hist(frameEQ.flatten(),dynamic_range,[0,dynamic_range], color = 'r')
-                ax2.set_xlim([0,dynamic_range])
-                ax2.legend(('cdf','histogram'), loc = 'upper left')
-                ax2.set_title('Equalized image')
-                plt.show()
-                
-            return frameEQ
+
+        frame_a = rank.equalize(frame_a, selem = selem)
 
 
-        frame_a = image_equalization(frame_a,dynamic_range,plot=0)
-
-
-        frame_b = image_equalization(frame_b,dynamic_range,plot=0)
-
+        frame_b = rank.equalize(frame_b, selem = selem)
+           
+        if save:
+                plt.imsave(folder + '/Images/ImagesCorrected/A' + str(image_number) + 'a.tif',frame_a, format='tiff',cmap=plt.cm.gray, vmin=0, vmax=255)
+                plt.imsave(folder + '/Images/ImagesCorrected/A' + str(image_number) + 'b.tif',frame_b, format='tiff',cmap=plt.cm.gray, vmin=0, vmax=255)
+                np.save(folder+'/Images/ImagesCorrected/A' + str(image_number) + 'a', frame_a)
+                np.save(folder+'/Images/ImagesCorrected/A' + str(image_number) + 'b', frame_b)
+    
+        # PIV cross correlation algorithm
         winsize = 32 # pixels, interrogation window size in frame A
         searchsize = 38  # pixels, search in image B
         overlap = 30 # pixels, 50% overlap
@@ -74,18 +84,17 @@ def saveVectorField(image_number):
                                                                dt=dt, 
                                                                search_area_size=searchsize, 
                                                                sig2noise_method='peak2peak')
-
+        # Find the coordinates associated at each vector
         x, y = pyprocess.get_coordinates( image_size=frame_a.shape, 
                                          search_area_size=searchsize, 
                                          overlap=overlap )
-
+        # Save into a mask the vectors with a low sing2noise ratio
         u1, v1, mask = validation.sig2noise_val( u0, v0, 
                                                 sig2noise, 
                                                 threshold = 1.05 )
 
         # filter out outliers that are very different from the
         # neighbours
-
         u2, v2 = filters.replace_outliers( u1, v1, 
                                           method='localmean', 
                                           max_iter=3, 
