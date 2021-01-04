@@ -21,6 +21,10 @@ def win_def_image(image_number,windowsizes,overlap,starting_folder):
         frame_a  = tools.imread( starting_folder + '/A' + image_number + 'a.tif' )
         frame_b  = tools.imread( starting_folder + '/A' + image_number + 'b.tif' )
         
+        fig,ax = plt.subplots(1,2,figsize=(12,10))
+        ax[0].imshow(frame_a,cmap=plt.cm.gray)
+        ax[1].imshow(frame_b,cmap=plt.cm.gray)
+        
         settings = windef.Settings()
 
         'Data related settings'
@@ -63,7 +67,7 @@ def win_def_image(image_number,windowsizes,overlap,starting_folder):
 # order of the image interpolation for the window deformation
         settings.interpolation_order = 3
         settings.scaling_factor = scaling_factor  # scaling factor pixel/meter
-        settings.dt = 1/15 # time between to frames (in seconds)
+        settings.dt = 0.0012 #1/15 #0.0012 # time between to frames (in seconds)
         'Signal to noise ratio options (only for the last pass)'
 # It is possible to decide if the S/N should be computed (for the last pass) or not
         settings.extract_sig2noise = True  # 'True' or 'False' (only for the last pass)
@@ -105,16 +109,17 @@ def win_def_image(image_number,windowsizes,overlap,starting_folder):
 # select a method to replace the outliers: 'localmean', 'disk', 'distance'
         settings.filter_method = 'localmean'
 # maximum iterations performed to replace the outliers
-        settings.max_filter_iteration = 10
+        settings.max_filter_iteration = 20
         settings.filter_kernel_size = 2  # kernel size for the localmean method
         'Output options'
 # Select if you want to save the plotted vectorfield: True or False
-        settings.save_plot = False
+        settings.save_plot = True
 # Choose wether you want to see the vectorfield or not :True or False
         settings.show_plot = True
-        settings.scale_plot = 200  # select a value to scale the quiver plot of the vectorfield
+        settings.show_all_plots = True
+        settings.scale_plot = 10000  # select a value to scale the quiver plot of the vectorfield
 # run the script with the given settings
-
+        fig, ax = plt.subplots(figsize=(8,8))
         windef.piv(settings)
         
         min_dim = str(settings.windowsizes[settings.num_iterations-1])
