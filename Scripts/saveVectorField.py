@@ -40,7 +40,7 @@ def saveVectorField(image_number, save=0, minus_average=0):
             frame_a = noise*flashMask_a+frame_a*(1-flashMask_a)
 
             seed_b = int(image_number) + ord('b')
-            generator = np.random.default_rng(seed_a) # Seed a generator for results to be reproducibles
+            generator = np.random.default_rng(seed_b) # Seed a generator for results to be reproducibles
             noise = generator.uniform(0,256, np.shape(flashMask_b))
             noise = noise.astype(int)
             # noise = skimage.util.img_as_ubyte(noise.astype('uint8'))
