@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-def saveVectorField(image_number, save=0):
+def saveVectorField(image_number, save=0, minus_average=0):
         'Saves the vector field associated to the given image number, Requires flas_mask function'
         import skimage 
         import skimage.exposure as exposure
@@ -18,8 +18,12 @@ def saveVectorField(image_number, save=0):
         dynamic_range = 2**pixel_depth # levels
         scaling_factor = 1/(np.mean(physical_window)/np.mean(resolution)) # m/pixel
         # Read frames data
-        frame_a  = tools.imread( folder + '/Images/A' + image_number + 'a.tif' )
-        frame_b  = tools.imread( folder + '/Images/A' + image_number + 'b.tif' )
+        if minus_average:
+        	frame_a  = tools.imread( folder + '/Images/ImagesMinusAverage/A' + image_number + 'a.tif' )
+        	frame_b  = tools.imread( folder + '/Images/ImagesMinusAverage/A' + image_number + 'b.tif' )
+        else:
+        	frame_a  = tools.imread( folder + '/Images/A' + image_number + 'a.tif' )
+        	frame_b  = tools.imread( folder + '/Images/A' + image_number + 'b.tif' )
         
         if True:
             # Save masked and flashed regions
@@ -55,20 +59,24 @@ def saveVectorField(image_number, save=0):
            # frame_b = skimage.util.img_as_ubyte(frame_a)
 
         # Equalize images
-            
-        selem = morphology.disk(70)     # Element that defines the pixels to be considered for the equalization
-            
 
+        selem = morphology.disk(70)     # Element that defines the pixels to be considered for the equalization
+
+        frame_a = frame_a.astype('uint8')
         frame_a = rank.equalize(frame_a, selem = selem)
 
-
+        frame_b = frame_b.astype('uint8')
         frame_b = rank.equalize(frame_b, selem = selem)
-           
+
+        if minus_average:
+        	location = '/Images/ImagesCorrectedMinusAverage/A'
+        else:
+        	location = '/Images/ImagesCorrected/A'
         if save:
-                plt.imsave(folder + '/Images/ImagesCorrected/A' + str(image_number) + 'a.tif',frame_a, format='tiff',cmap=plt.cm.gray, vmin=0, vmax=255)
-                plt.imsave(folder + '/Images/ImagesCorrected/A' + str(image_number) + 'b.tif',frame_b, format='tiff',cmap=plt.cm.gray, vmin=0, vmax=255)
-                np.save(folder+'/Images/ImagesCorrected/A' + str(image_number) + 'a', frame_a)
-                np.save(folder+'/Images/ImagesCorrected/A' + str(image_number) + 'b', frame_b)
+                plt.imsave(folder + location + str(image_number) + 'a.tif',frame_a, format='tiff',cmap=plt.cm.gray, vmin=0, vmax=255)
+                plt.imsave(folder + location + str(image_number) + 'b.tif',frame_b, format='tiff',cmap=plt.cm.gray, vmin=0, vmax=255)
+                np.save(folder+ location + str(image_number) + 'a', frame_a)
+                np.save(folder+ location + str(image_number) + 'b', frame_b)
     
         # PIV cross correlation algorithm
         winsize = 32 # pixels, interrogation window size in frame A
