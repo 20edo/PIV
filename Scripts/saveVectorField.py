@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+def checkerboard(shape):
+    return np.indices(shape).sum(axis=0) % 2
+
 def saveVectorField(image_number, save=0, minus_average=0):
         'Saves the vector field associated to the given image number, Requires flas_mask function'
         import skimage 
@@ -31,20 +34,34 @@ def saveVectorField(image_number, save=0, minus_average=0):
             flashMask_b, number_b = flash_mask(frame_b)
             
             # Replace flashed regions with a random noise
-            seed_a = int(image_number) + ord('a')
-            generator = np.random.default_rng(seed_a) # Seed a generator for results to be reproducigles
-            noise = generator.uniform(0,256, np.shape(flashMask_a))
-            noise = noise*flashMask_a
-            noise = noise.astype(int)
+            #seed_a = int(image_number) + ord('a')
+            #generator = np.random.default_rng(seed_a) # Seed a generator for results to be reproducigles
+            #noise = generator.uniform(0,256, np.shape(flashMask_a))
+            #noise = noise*flashMask_a
+            #noise = noise.astype(int)
             # noise = skimage.util.img_as_ubyte(noise.astype('uint8'))
-            frame_a = noise*flashMask_a+frame_a*(1-flashMask_a)
+            #frame_a = noise*flashMask_a+frame_a*(1-flashMask_a)
 
-            seed_b = int(image_number) + ord('b')
-            generator = np.random.default_rng(seed_b) # Seed a generator for results to be reproducibles
-            noise = generator.uniform(0,256, np.shape(flashMask_b))
-            noise = noise.astype(int)
+            #seed_b = int(image_number) + ord('b')
+            #generator = np.random.default_rng(seed_a) # Seed a generator for results to be reproducibles
+            #noise = generator.uniform(0,256, np.shape(flashMask_b))
+            #noise = noise.astype(int)
             # noise = skimage.util.img_as_ubyte(noise.astype('uint8'))
-            frame_b = noise*flashMask_b+frame_b*(1-flashMask_b)
+            #frame_b = noise*flashMask_b+frame_b*(1-flashMask_b)
+            
+            # Replace flash with checkerboard
+            check = 255*checkerboard(np.shape(flashMask_a))
+            check = check * flashMask_a
+            check = check.astype(int)
+            frame_a = check*flashMask_a+frame_a*(1-flashMask_a)
+            
+                        
+            # Replace flash with checkerboard
+            check = 255*checkerboard(np.shape(flashMask_b))
+            check = check * flashMask_b
+            check = check.astype(int)
+            frame_b = check*flashMask_b+frame_b*(1-flashMask_b)
+
 
             # Warn the user if some flashed region has been identified
             if number_a > 0:
