@@ -1,4 +1,4 @@
-def flash_mask(image, bin_treshold=250, region_connectivity=1, area_treshold=200):
+def flash_mask(image, bin_treshold=253, region_connectivity=1, area_treshold=100):
     '''Returns a mask with true where the image is flashed
     *****************************INPUTS
     bin_treshold        -> Threshold for binarization
@@ -22,7 +22,8 @@ def flash_mask(image, bin_treshold=250, region_connectivity=1, area_treshold=200
     tresh = sk.filters.threshold_otsu(image)
 
     # Morphological closing ( holes inside a flashed region mean nothing)
-    bw = sk.morphology.closing(image > tresh, sk.morphology.square(3))
+    selem = sk.morphology.square(2)	# Not used
+    bw = sk.morphology.closing(image > tresh)	# Uses a cross of dimension 2, connectivity = 1
     
     # Split the image in regions
     labeled_image = sk.measure.label(bw,connectivity=region_connectivity)
