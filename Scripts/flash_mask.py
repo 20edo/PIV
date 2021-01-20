@@ -1,7 +1,7 @@
-def flash_mask(image, bin_treshold=250, region_connectivity=1, area_treshold=100):
+def flash_mask(image, bin_treshold='250', region_connectivity=1, area_treshold=100):
     '''Returns a mask with true where the image is flashed
     *****************************INPUTS
-    bin_treshold        -> Threshold for binarization
+    bin_treshold        -> Threshold for binarization. If None uses otsu method to determine treshold. Default value 250
     region_connectivity -> Value of connectivity used to look for regions (1    or 2)
     area_trshold        -> Minimum area required to consider a region flashed
     *****************************OUTPUTS
@@ -15,11 +15,17 @@ def flash_mask(image, bin_treshold=250, region_connectivity=1, area_treshold=100
     import pandas as pd
     
     # Image binarization
-    binarization = image > bin_treshold
-    binarization = binarization.astype('uint8')
+    # binarization = image > bin_treshold		# Not used
+    # binarization = binarization.astype('uint8')	# Not used
 
-    # Calculate otsu treshold
-    tresh = sk.filters.threshold_otsu(image)
+    if bin_treshold == 'None':
+    	# Calculate otsu treshold
+    	tresh = sk.filters.threshold_otsu(image)
+    	print(tresh)
+    	
+    else: 
+    	tresh = bin_treshold
+    	
 
     # Morphological closing ( holes inside a flashed region mean nothing)
     selem = sk.morphology.square(2)	# Not used
