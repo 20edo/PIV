@@ -1,4 +1,4 @@
-def flash_mask(image, bin_treshold=190, region_connectivity=1, area_treshold=25):
+def flash_mask(image, bin_treshold='multiotsu', region_connectivity=1, area_treshold=30):
     '''Returns a mask with true where the image is flashed
     *****************************INPUTS
     bin_treshold        -> Threshold for binarization. If None uses otsu method to determine treshold. Default value 250
@@ -18,18 +18,28 @@ def flash_mask(image, bin_treshold=190, region_connectivity=1, area_treshold=25)
     # binarization = image > bin_treshold		# Not used
     # binarization = binarization.astype('uint8')	# Not used
 
-    if bin_treshold == 'None':
+    if bin_treshold == 'otsu':
     	# Calculate otsu treshold
     	tresh = sk.filters.threshold_otsu(image)
-    	print(tresh)
+    	#print(tresh)
     	
+    elif bin_treshold == 'isodata':
+        tresh = sk.filters.threshold_isodata(image)	
+        #print(tresh)
+        
+    elif bin_treshold == 'multiotsu':
+    	res = sk.filters.threshold_multiotsu(image, classes = 4)
+    	#print(res)
+    	tresh = res[-1]
+
     else: 
     	tresh = bin_treshold
     	
 
+
     # Morphological closing ( holes inside a flashed region mean nothing)
     selem = sk.morphology.square(2)	# Not used
-    bw = sk.morphology.closing(image > tresh)	# Uses a cross of dimension 2, connectivity = 1
+    bw = sk.morphology.closing(image < tresh)	# Uses a cross of dimension 2, connectivity = 1
     
     # Split the image in regions
     labeled_image = sk.measure.label(bw,connectivity=region_connectivity)
