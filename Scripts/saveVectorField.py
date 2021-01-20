@@ -101,7 +101,7 @@ def saveVectorField(image_number, save=0, minus_average=0, fill='noise'):
 
         # PIV cross correlation algorithm
         winsize = 32 # pixels, interrogation window size in frame A
-        searchsize = 32  # pixels, search in image B
+        searchsize = 40  # pixels, search in image B
         overlap = 16 # pixels, 50% overlap
         dt = 0.0012 # sec, time interval between pulses
 
