@@ -1,4 +1,4 @@
-def flash_mask(image, bin_treshold='250', region_connectivity=1, area_treshold=100):
+def flash_mask(image, bin_treshold=190, region_connectivity=1, area_treshold=25):
     '''Returns a mask with true where the image is flashed
     *****************************INPUTS
     bin_treshold        -> Threshold for binarization. If None uses otsu method to determine treshold. Default value 250

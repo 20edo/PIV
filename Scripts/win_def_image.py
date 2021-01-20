@@ -86,12 +86,12 @@ def win_def_image(image_number,windowsizes,overlap,starting_folder):
 # The validation is done at each iteration based on three filters.
 # The first filter is based on the min/max ranges. Observe that these values are defined in
 # terms of minimum and maximum displacement in pixel/frames.
-        settings.MinMax_U_disp = (-100, 100)
-        settings.MinMax_V_disp = (-100, 100)
+        settings.MinMax_U_disp = (-10, 10)
+        settings.MinMax_V_disp = (-10, 10)
 # The second filter is based on the global STD threshold
-        settings.std_threshold = 7  # threshold of the std validation
+        settings.std_threshold = 2  # threshold of the std validation
 # The third filter is the median test (not normalized at the moment)
-        settings.median_threshold = 1.5  # threshold of the median validation
+        settings.median_threshold = 3  # threshold of the median validation
 # On the last iteration, an additional validation can be done based on the S/N.
         settings.median_size=1 #defines the size of the local median
         'Validation based on the signal to noise ratio'

@@ -4,7 +4,7 @@
 def checkerboard(shape):
     return np.indices(shape).sum(axis=0) % 2
 
-def saveVectorField(image_number, save=0, minus_average=0, fill='checkerboard'):
+def saveVectorField(image_number, save=0, minus_average=0, fill='noise'):
         'Saves the vector field associated to the given image number, Requires flas_mask function'
         import skimage 
         import skimage.exposure as exposure
@@ -101,9 +101,9 @@ def saveVectorField(image_number, save=0, minus_average=0, fill='checkerboard'):
 
         # PIV cross correlation algorithm
         winsize = 32 # pixels, interrogation window size in frame A
-        searchsize = 38  # pixels, search in image B
-        overlap = 30 # pixels, 50% overlap
-        dt = 1/15 # sec, time interval between pulses
+        searchsize = 32  # pixels, search in image B
+        overlap = 16 # pixels, 50% overlap
+        dt = 0.0012 # sec, time interval between pulses
 
 
         u0, v0, sig2noise = pyprocess.extended_search_area_piv(frame_a.astype(np.int32), 
@@ -139,6 +139,6 @@ def saveVectorField(image_number, save=0, minus_average=0, fill='checkerboard'):
 
         #save in the simple ASCII table format
         name = folder + '/Vector_field/exp1_' + image_number + '.txt'
-        tools.save(x, y, u3, v3, mask, filename = name )
+        tools.save(x, y, u3, v3, sig2noise,mask, filename = name )
 
         return x,y,uOut,vOut,sig2noise, mask
