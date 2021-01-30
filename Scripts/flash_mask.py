@@ -38,7 +38,7 @@ def flash_mask(image, bin_treshold='multiotsu', region_connectivity=1, area_tres
 
 
     # Morphological closing ( holes inside a flashed region mean nothing)
-    selem = sk.morphology.square(2)	# Not used
+    # selem = sk.morphology.square(2)	# Not used
     bw = sk.morphology.closing(image > tresh)	# Uses a cross of dimension 2, connectivity = 1
     
     # Split the image in regions

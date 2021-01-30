@@ -93,7 +93,7 @@ def win_def_image(image_number,windowsizes,overlap,starting_folder):
 # The second filter is based on the global STD threshold
         settings.std_threshold = 6  # threshold of the std validation
 # The third filter is the median test (not normalized at the moment)
-        settings.median_threshold = 3  # threshold of the median validation
+        settings.median_threshold = 50  # threshold of the median validation
 # On the last iteration, an additional validation can be done based on the S/N.
         settings.median_size=1 #defines the size of the local median
         'Validation based on the signal to noise ratio'
@@ -115,7 +115,7 @@ def win_def_image(image_number,windowsizes,overlap,starting_folder):
         settings.filter_kernel_size = 2  # kernel size for the localmean method
         'Output options'
 # Select if you want to save the plotted vectorfield: True or False
-        settings.save_plot = True
+        settings.save_plot = False
 # Choose wether you want to see the vectorfield or not :True or False
         settings.show_plot = True
         settings.show_all_plots = True
